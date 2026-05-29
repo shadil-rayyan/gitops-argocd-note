@@ -1,0 +1,338 @@
+## Introduction to GitOps
+
+GitOps is a modern approach for managing applications and infrastructure using Git as the **single source of truth**.
+
+According to the definition:
+
+> “GitOps uses Git as a single source of truth to deliver applications and infrastructure.”
+
+GitOps is not limited to application deployment. It also manages infrastructure resources such as Kubernetes nodes, namespaces, admission controllers, and cluster configurations.
+
+---
+
+# Why GitOps?
+
+Before GitOps, infrastructure changes in Kubernetes were often done manually using:
+
+* Shell scripts
+* Python scripts
+* `kubectl`
+* Helm commands
+
+## Problems Without GitOps
+
+### 1. No Tracking of Changes
+
+If someone modifies a Kubernetes resource directly:
+
+* There is no proper history
+* No audit trail
+* Difficult to identify who made the change
+
+### 2. No Version Control
+
+Infrastructure changes are not versioned like application source code.
+
+### 3. Lack of Standardized Deployment Process
+
+Deployments become inconsistent and difficult to manage.
+
+---
+
+# GitOps Solution
+
+GitOps solves these issues by introducing Git-based workflows for infrastructure and deployments.
+
+## Workflow
+
+1. Kubernetes YAML manifests are stored in Git.
+2. A DevOps engineer submits a Pull Request (PR).
+3. Another engineer reviews and approves the PR.
+4. Changes are merged into the repository.
+5. A GitOps controller (e.g., Argo CD or Flux CD) detects the changes.
+6. The controller deploys the updated configuration to Kubernetes.
+
+---
+
+# GitOps Architecture
+
+## Components
+
+### Git Repository
+
+Stores:
+
+* Kubernetes manifests
+* Infrastructure configurations
+* Application deployment files
+
+Examples:
+
+* `deployment.yaml`
+* `service.yaml`
+* `node.yaml`
+
+### GitOps Controller
+
+Examples:
+
+* Argo CD
+* Flux CD
+
+Responsibilities:
+
+* Watches Git repositories
+* Detects changes
+* Synchronizes Kubernetes cluster state
+
+### Kubernetes Cluster
+
+Receives desired state updates from the GitOps controller.
+
+---
+
+# Core Principles of GitOps
+
+## 1. Declarative Configuration
+
+All infrastructure and application configurations must be declarative.
+
+Example:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+```
+
+Meaning:
+
+* Desired state is explicitly defined.
+* “What you see is what you have.”
+
+---
+
+## 2. Versioned and Immutable
+
+All changes are:
+
+* Stored in version control
+* Auditable
+* Immutable
+
+Benefits:
+
+* Rollback support
+* Change history
+* Team collaboration
+
+Note:
+GitOps is not restricted only to Git repositories. Other versioned storage systems like S3 buckets can also be used.
+
+---
+
+## 3. Automatic Change Deployment
+
+GitOps controllers continuously monitor repositories.
+
+Deployment can happen using:
+
+* Pull mechanism
+* Push mechanism (webhooks)
+
+Whenever changes are detected, they are automatically applied to Kubernetes.
+
+---
+
+## 4. Continuous Reconciliation
+
+This is one of the most important GitOps concepts.
+
+### Meaning
+
+The GitOps controller continuously compares:
+
+* Desired state (Git repository)
+  vs
+* Actual state (Kubernetes cluster)
+
+If differences are detected:
+
+* The controller automatically restores the cluster to match Git.
+
+---
+
+# Continuous Reconciliation Example
+
+Suppose someone manually changes a Kubernetes resource directly in the cluster.
+
+GitOps controller behavior:
+
+1. Detects drift
+2. Compares cluster state with Git
+3. Overrides unauthorized changes
+4. Restores the correct configuration
+
+This ensures:
+
+* Consistency
+* Security
+* Stability
+
+---
+
+# GitOps and Security
+
+GitOps improves security because:
+
+* Manual cluster modifications are minimized
+* Unauthorized changes are reverted automatically
+* Git becomes the controlled approval mechanism
+
+Only approved changes merged into Git are considered valid.
+
+---
+
+# How GitOps Controllers Work
+
+GitOps controllers maintain two states:
+
+## 1. Cluster State Cache
+
+Reads all Kubernetes resources.
+
+## 2. Git Repository Cache
+
+Reads desired manifests from Git.
+
+The controller continuously compares both caches.
+
+If mismatch occurs:
+
+* Kubernetes cluster is updated to match Git.
+
+Important:
+Git is always treated as the source of truth.
+
+---
+
+# GitOps for Infrastructure
+
+GitOps is not only for applications.
+
+It is heavily used for:
+
+* Infrastructure management
+* Multi-cluster Kubernetes environments
+* Cluster configuration management
+
+Examples:
+
+* Node configurations
+* Admission controllers
+* Policies
+* Namespaces
+* RBAC rules
+
+In large-scale Kubernetes systems, infrastructure GitOps becomes even more critical.
+
+---
+
+# Is GitOps Only for Kubernetes?
+
+## Theoretical Answer
+
+No.
+
+GitOps principles can apply to:
+
+* Cloud infrastructure
+* Docker environments
+* AWS resources
+* Other platforms
+
+## Practical Reality
+
+Most popular GitOps tools currently focus on Kubernetes.
+
+Examples:
+
+* Argo CD
+* Flux CD
+
+---
+
+# Advantages of GitOps
+
+## 1. Security
+
+Unauthorized changes are reverted automatically.
+
+## 2. Versioning
+
+All infrastructure changes are tracked.
+
+## 3. Auto Deployment
+
+Changes are deployed automatically.
+
+## 4. Auto Healing
+
+Infrastructure drift is corrected automatically.
+
+## 5. Continuous Reconciliation
+
+Cluster state always matches desired configuration.
+
+---
+
+# Popular GitOps Tools
+
+## Argo CD
+
+A Kubernetes-native GitOps controller widely used for CD pipelines.
+
+## Flux CD
+
+Another popular GitOps controller focused on Kubernetes automation.
+
+---
+
+# CI/CD with GitOps
+
+Typical workflow:
+
+## CI (Continuous Integration)
+
+Tools:
+
+* Jenkins
+* GitHub Actions
+* GitLab CI
+
+Responsibilities:
+
+* Build applications
+* Run tests
+* Create artifacts
+
+## CD (Continuous Delivery/Deployment)
+
+Tools:
+
+* Argo CD
+* Flux CD
+
+Responsibilities:
+
+* Deploy applications using GitOps principles
+
+---
+
+# Important Takeaways
+
+* GitOps standardizes deployments.
+* Git becomes the single source of truth.
+* Infrastructure is treated like code.
+* Kubernetes state is continuously reconciled.
+* GitOps improves auditing, security, and reliability.
+
