@@ -1,0 +1,548 @@
+# GitOps Architecture & Argo CD Notes
+
+# Introduction
+
+This session focuses on understanding:
+
+* GitOps architecture
+* Internal working of GitOps tools
+* Argo CD architecture
+* Core microservices in GitOps systems
+* Reconciliation logic
+* Popular GitOps tools
+
+The goal is to understand how GitOps controllers are built so that switching between tools like Argo CD and Flux CD becomes easy.
+
+---
+
+# Recap of GitOps
+
+GitOps uses:
+
+* Git as the single source of truth
+* Kubernetes manifests stored declaratively
+* Controllers to synchronize Git state with Kubernetes cluster state
+
+GitOps continuously ensures:
+
+* Kubernetes state = Git state
+
+---
+
+# Popular GitOps Tools
+
+## 1. Argo CD
+
+A Kubernetes-native GitOps controller widely used in production environments.
+
+Features:
+
+* Declarative deployments
+* Auto-sync
+* Drift detection
+* UI and CLI support
+* Multi-cluster management
+
+Argo CD is one of the most popular GitOps tools.
+
+---
+
+## 2. Flux CD
+
+Another CNCF GitOps tool focused on Kubernetes automation.
+
+Features:
+
+* Lightweight architecture
+* Git reconciliation
+* Kubernetes-native approach
+
+---
+
+## 3. Jenkins X
+
+A CI/CD platform with GitOps capabilities integrated into Kubernetes workflows.
+
+---
+
+## 4. Spinnaker
+
+A deployment-focused continuous delivery platform.
+
+Although it supports GitOps workflows, it is primarily deployment-oriented rather than fully GitOps-centric.
+
+---
+
+# Argo CD Overview
+
+## History
+
+* Originally created by engineers at Applatix
+* Later acquired by Intuit
+* Open sourced under the Argo Project
+
+---
+
+# Argo Ecosystem
+
+The Argo ecosystem contains:
+
+* Argo CD
+* Argo Rollouts
+* Argo Workflows
+* Argo Events
+* Argo Notifications
+
+---
+
+# CNCF Status
+
+Argo CD is:
+
+* A CNCF graduated project
+* Highly popular in the Kubernetes ecosystem
+* Actively maintained by multiple organizations
+
+Contributors include:
+
+* BlackRock
+* Codefresh
+* Intuit
+* Red Hat
+* Akuity
+
+---
+
+# High-Level GitOps Working
+
+A GitOps tool maintains synchronization between:
+
+## 1. Git Repository
+
+Stores:
+
+* Kubernetes manifests
+* Application configurations
+* Infrastructure configurations
+
+## 2. Kubernetes Cluster
+
+Actual running state of applications and infrastructure.
+
+---
+
+# Core GitOps Flow
+
+## Step 1
+
+Developer pushes YAML manifests to Git.
+
+## Step 2
+
+GitOps controller reads manifests.
+
+## Step 3
+
+Controller deploys resources to Kubernetes.
+
+## Step 4
+
+Controller continuously compares:
+
+* Git state
+  vs
+* Kubernetes cluster state
+
+## Step 5
+
+If drift is detected:
+
+* Controller reconciles the cluster automatically.
+
+---
+
+# Reconciliation Logic
+
+Reconciliation is the most important concept in Kubernetes controllers.
+
+## Definition
+
+Reconciliation means continuously ensuring:
+
+> Desired state = Actual state
+
+In GitOps:
+
+* Desired state → Git repository
+* Actual state → Kubernetes cluster
+
+The GitOps controller constantly compares both states.
+
+---
+
+# Example of Reconciliation
+
+Suppose:
+
+* Someone manually modifies a deployment inside Kubernetes.
+
+GitOps controller behavior:
+
+1. Detects the difference
+2. Reads correct configuration from Git
+3. Restores Kubernetes state
+
+This process is called:
+
+* Drift correction
+* Auto healing
+* Continuous reconciliation
+
+---
+
+# Advantages Over Traditional Deployments
+
+Traditional deployment methods:
+
+* Shell scripts
+* Python scripts
+* Jenkins jobs
+
+Problems:
+
+* No automatic drift correction
+* Manual recovery
+* Lack of synchronization
+
+GitOps adds:
+
+* Continuous monitoring
+* Automated correction
+* Declarative infrastructure
+
+---
+
+# Argo CD Architecture
+
+Argo CD consists of multiple microservices.
+
+The architecture is designed to:
+
+* Read Git state
+* Read Kubernetes state
+* Compare both states
+* Synchronize differences
+
+---
+
+# Main Components of Argo CD
+
+## 1. Repo Server
+
+### Responsibility
+
+Connects to Git repositories.
+
+### Functions
+
+* Pulls manifests from Git
+* Reads desired configuration
+* Stores Git state information
+
+### Purpose
+
+Acts as the Git state provider.
+
+---
+
+## 2. Application Controller
+
+### Responsibility
+
+Connects to Kubernetes cluster.
+
+### Functions
+
+* Reads Kubernetes cluster state
+* Compares Git state with cluster state
+* Performs reconciliation
+* Applies manifests to Kubernetes
+
+### Core Logic
+
+This component performs:
+
+* Sync operations
+* Drift detection
+* Auto healing
+
+---
+
+# Application Controller Workflow
+
+## Step 1
+
+Gets desired state from Repo Server.
+
+## Step 2
+
+Gets actual state from Kubernetes.
+
+## Step 3
+
+Compares both states.
+
+## Step 4
+
+If mismatch exists:
+
+* Synchronizes cluster with Git.
+
+---
+
+## 3. API Server
+
+### Responsibility
+
+Provides user interaction layer.
+
+### Supports
+
+* Web UI
+* CLI access
+* API communication
+
+### Functions
+
+* Authentication
+* Authorization
+* User requests
+* Cluster management
+
+Users communicate with Argo CD through the API Server.
+
+---
+
+## 4. Dex
+
+### Purpose
+
+Provides authentication integration.
+
+### Supports
+
+* OAuth
+* OIDC
+* SSO integrations
+
+### Examples
+
+Can integrate with:
+
+* Google login
+* LDAP
+* GitHub
+* Other identity providers
+
+Dex acts as an authentication proxy.
+
+---
+
+## 5. Redis
+
+### Purpose
+
+Caching layer.
+
+### Why Needed?
+
+Argo CD components maintain cluster state information.
+
+Redis helps:
+
+* Store cached state
+* Improve performance
+* Preserve state during failures
+
+---
+
+# Stateful Nature of GitOps Controllers
+
+GitOps controllers maintain:
+
+* Cluster state
+* Git state
+* Synchronization metadata
+
+Therefore:
+
+* Components are often stateful
+* Persistent caching is required
+
+Redis helps maintain this information.
+
+---
+
+# Simplified Argo CD Architecture Flow
+
+## Repo Server
+
+Reads Git state.
+
+↓
+
+## Application Controller
+
+Reads Kubernetes state.
+
+↓
+
+## Comparison Engine
+
+Checks drift between Git and Kubernetes.
+
+↓
+
+## Synchronization
+
+Applies corrections if drift exists.
+
+↓
+
+## API Server
+
+Provides UI/CLI access.
+
+↓
+
+## Dex + Redis
+
+Handle authentication and caching.
+
+---
+
+# GitOps Controller Responsibilities
+
+A GitOps controller must:
+
+## 1. Watch Git
+
+Detect manifest changes.
+
+## 2. Watch Kubernetes
+
+Track live cluster state.
+
+## 3. Compare States
+
+Detect differences.
+
+## 4. Reconcile Differences
+
+Restore desired configuration.
+
+---
+
+# Installation Methods of Argo CD
+
+Argo CD can be installed using:
+
+## 1. YAML Manifests
+
+Direct Kubernetes manifests.
+
+## 2. Helm Charts
+
+Helm-based installation.
+
+## 3. Kubernetes Operators
+
+Operator-based lifecycle management.
+
+---
+
+# Important Real-World GitOps Scenarios
+
+## Scenario 1: Admission Controllers Modify Pods
+
+Example:
+
+* Admission controller adds:
+
+  * Resource limits
+  * Labels
+  * Annotations
+
+Question:
+Will GitOps remove them?
+
+Answer:
+GitOps tools provide ignore mechanisms and customization to avoid conflicts with dynamically injected fields.
+
+---
+
+## Scenario 2: Existing Applications Before GitOps
+
+Suppose:
+
+* Applications already exist in Kubernetes
+* GitOps is introduced later
+
+Question:
+Will GitOps delete unmanaged applications?
+
+Answer:
+GitOps tools allow controlled onboarding and management strategies.
+
+---
+
+# Why Understanding Architecture Matters
+
+If you understand:
+
+* Repo server
+* Application controller
+* Reconciliation logic
+
+Then:
+
+* You can understand any GitOps tool
+* Switching between Argo CD and Flux CD becomes easier
+* Troubleshooting becomes simpler
+
+---
+
+# Key Concepts Summary
+
+## GitOps Core Idea
+
+Git = Single source of truth.
+
+---
+
+## Main GitOps Features
+
+* Declarative infrastructure
+* Continuous reconciliation
+* Drift detection
+* Auto healing
+* Version control
+* Security improvements
+
+---
+
+# Final Summary
+
+Argo CD and other GitOps tools work by continuously synchronizing Kubernetes clusters with declarative configurations stored in Git repositories.
+
+Core architecture includes:
+
+* Repo server
+* Application controller
+* API server
+* Authentication layer
+* Caching layer
+
+The heart of GitOps is:
+
+> Continuous reconciliation between Git and Kubernetes.
